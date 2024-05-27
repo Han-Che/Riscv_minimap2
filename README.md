@@ -1,6 +1,5 @@
 
-
-
+### Optimization methods
 | Column 1 | Column 2 | Column 3 |
 |----------|----------|----------|
 | Row 1    | Data 1   | Data 2   |
