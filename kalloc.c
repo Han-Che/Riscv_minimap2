@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "kalloc.h"
+#include "malloc_huge.h"
 
 /* In kalloc, a *core* is a large chunk of contiguous memory. Each core is
  * associated with a master header, which keeps the size of the current core
@@ -132,7 +133,12 @@ void *kmalloc(void *_km, size_t n_bytes)
 	header_t *p, *q;
 
 	if (n_bytes == 0) return 0;
-	if (km == NULL) return malloc(n_bytes);
+	if (km == NULL) {
+		if(n_bytes > 1*1024*1024)
+			return malloc_huge_page(n_bytes, 1);
+		else
+			return malloc_huge_page(n_bytes, 0);
+	}
 	n_units = (n_bytes + sizeof(size_t) + sizeof(header_t) - 1) / sizeof(header_t); /* header+n_bytes requires at least this number of units */
 
 	if (!(q = km->loop_head)) /* the first time when kmalloc() is called, intialize it */
@@ -159,7 +165,15 @@ void *kcalloc(void *_km, size_t count, size_t size)
 	kmem_t *km = (kmem_t*)_km;
 	void *p;
 	if (size == 0 || count == 0) return 0;
-	if (km == NULL) return calloc(count, size);
+	if (km == NULL) {
+		//return calloc(count, size);
+		if(count*size > 1*1024*1024)
+			p = malloc_huge_page(count*size, 1);
+		else
+			p = malloc_huge_page(count*size, 0);
+		memset(p, 0, count * size);
+		return p;
+	}
 	p = kmalloc(km, count * size);
 	memset(p, 0, count * size);
 	return p;

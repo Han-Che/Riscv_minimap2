@@ -14,6 +14,7 @@
 #include "mmpriv.h"
 #include "kvec.h"
 #include "khash.h"
+#include "malloc_huge.h"
 
 #define idx_hash(a) ((a)>>1)
 #define idx_eq(a, b) ((a)>>1 == (b)>>1)
@@ -194,6 +195,7 @@ int32_t mm_idx_cal_max_occ(const mm_idx_t *mi, float f)
 		if (mi->B[i].h) n += kh_size((idxhash_t*)mi->B[i].h);
 	if (n == 0) return INT32_MAX;
 	a = (uint32_t*)malloc(n * 4);
+	//a = (uint32_t*)malloc_huge_page(n * 4, 1);
 	for (i = n = 0; i < 1<<mi->b; ++i) {
 		idxhash_t *h = (idxhash_t*)mi->B[i].h;
 		if (h == 0) continue;

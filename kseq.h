@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include "malloc_huge.h"
 
 #define KS_SEP_SPACE 0 // isspace(): \t, \n, \v, \f, \r
 #define KS_SEP_TAB   1 // isspace() && !' '
@@ -61,7 +62,7 @@
 	{ \
 		kstream_t *ks = (kstream_t*)calloc(1, sizeof(kstream_t)); \
 		ks->f = f; ks->bufsize = __bufsize; \
-		ks->buf = (unsigned char*)malloc(__bufsize); \
+		ks->buf = (unsigned char*)malloc_huge_page(__bufsize, 1); \
 		return ks; \
 	} \
 	SCOPE void ks_destroy(kstream_t *ks) \

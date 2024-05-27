@@ -24,6 +24,10 @@
 #define KSW_CIGAR_DEL    2
 #define KSW_CIGAR_N_SKIP 3
 
+#ifndef SIMDE_ENABLE_NATIVE_ALIASES
+#define SIMDE_ENABLE_NATIVE_ALIASES
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

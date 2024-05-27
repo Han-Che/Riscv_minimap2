@@ -1,8 +1,13 @@
+#define _GNU_SOURCE
+#include <sched.h>
+
 #include <pthread.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
 #include "kthread.h"
+//#include "set_cpu_core.h"
+typedef unsigned long UINT;
 
 #if (defined(WIN32) || defined(_WIN32)) && defined(_MSC_VER)
 #define __sync_fetch_and_add(ptr, addend)     _InterlockedExchangeAdd((void*)ptr, addend)
@@ -27,6 +32,18 @@ typedef struct kt_for_t {
 	void *data;
 } kt_for_t;
 
+static inline void set_cpu_core ( int core )
+{
+  cpu_set_t mask;
+  CPU_ZERO ( &mask );
+  CPU_SET ( core, &mask );
+  if ( pthread_setaffinity_np ( pthread_self(), sizeof ( mask ), &mask ) == -1 )
+  {
+    printf ( "set thread %lu to core %lu failed\n", ( UINT ) pthread_self(), ( UINT ) core );
+    exit ( -1 );
+  }
+}
+
 static inline long steal_work(kt_for_t *t)
 {
 	int i, min_i = -1;
@@ -40,6 +57,7 @@ static inline long steal_work(kt_for_t *t)
 static void *ktf_worker(void *data)
 {
 	ktf_worker_t *w = (ktf_worker_t*)data;
+	set_cpu_core(w->i);
 	long i;
 	for (;;) {
 		i = __sync_fetch_and_add(&w->i, w->t->n_threads);

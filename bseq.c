@@ -6,6 +6,7 @@
 #include "bseq.h"
 #include "kvec.h"
 #include "kseq.h"
+#include "malloc_huge.h"
 KSEQ_INIT2(, gzFile, gzread)
 
 unsigned char seq_comp_table[256] = {
@@ -57,7 +58,11 @@ void mm_bseq_close(mm_bseq_file_t *fp)
 static inline char *kstrdup(const kstring_t *s)
 {
 	char *t;
-	t = (char*)malloc(s->l + 1);
+	//t = (char*)malloc(s->l + 1);
+	if(s->l > 10*1024*1024)
+		t = (char*)malloc_huge_page(s->l + 1, 1);
+	else
+		t = (char*)malloc(s->l + 1);
 	memcpy(t, s->s, s->l + 1);
 	return t;
 }

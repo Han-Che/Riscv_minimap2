@@ -90,17 +90,17 @@ int ksw_ll_i16(void *q_, int tlen, const uint8_t *target, int _gapo, int _gape, 
 	uint16_t *H8;
 
 #define __max_8(ret, xx) do { \
-		(xx) = _mm_max_epi16((xx), _mm_srli_si128((xx), 8)); \
-		(xx) = _mm_max_epi16((xx), _mm_srli_si128((xx), 4)); \
-		(xx) = _mm_max_epi16((xx), _mm_srli_si128((xx), 2)); \
-		(ret) = _mm_extract_epi16((xx), 0); \
+		(xx) = simde_mm_max_epi16((xx), simde_mm_srli_si128((xx), 8)); \
+		(xx) = simde_mm_max_epi16((xx), simde_mm_srli_si128((xx), 4)); \
+		(xx) = simde_mm_max_epi16((xx), simde_mm_srli_si128((xx), 2)); \
+		(ret) = simde_mm_extract_epi16((xx), 0); \
 	} while (0)
 
 	// initialization
 	*qe = *te = -1;
-	zero = _mm_set1_epi32(0);
-	gapoe = _mm_set1_epi16(_gapo + _gape);
-	gape = _mm_set1_epi16(_gape);
+	zero = simde_mm_set1_epi32(0);
+	gapoe = simde_mm_set1_epi16(_gapo + _gape);
+	gape = simde_mm_set1_epi16(_gape);
 	H0 = q->H0; H1 = q->H1; E = q->E; Hmax = q->Hmax;
 	slen = q->slen, qlen8 = slen * 8;
 	memset(E,    0, slen * sizeof(__m128i));
@@ -110,32 +110,32 @@ int ksw_ll_i16(void *q_, int tlen, const uint8_t *target, int _gapo, int _gape, 
 	for (i = 0; i < tlen; ++i) {
 		int j, k, imax;
 		__m128i e, h, f = zero, max = zero, *S = q->qp + target[i] * slen; // s is the 1st score vector
-		h = _mm_load_si128(H0 + slen - 1); // h={2,5,8,11,14,17,-1,-1} in the above example
-		h = _mm_slli_si128(h, 2);
+		h = simde_mm_load_si128(H0 + slen - 1); // h={2,5,8,11,14,17,-1,-1} in the above example
+		h = simde_mm_slli_si128(h, 2);
 		for (j = 0; LIKELY(j < slen); ++j) {
-			h = _mm_adds_epi16(h, *S++);
-			e = _mm_load_si128(E + j);
-			h = _mm_max_epi16(h, e);
-			h = _mm_max_epi16(h, f);
-			max = _mm_max_epi16(max, h);
-			_mm_store_si128(H1 + j, h);
-			h = _mm_subs_epu16(h, gapoe);
-			e = _mm_subs_epu16(e, gape);
-			e = _mm_max_epi16(e, h);
-			_mm_store_si128(E + j, e);
-			f = _mm_subs_epu16(f, gape);
-			f = _mm_max_epi16(f, h);
-			h = _mm_load_si128(H0 + j);
+			h = simde_mm_adds_epi16(h, *S++);
+			e = simde_mm_load_si128(E + j);
+			h = simde_mm_max_epi16(h, e);
+			h = simde_mm_max_epi16(h, f);
+			max = simde_mm_max_epi16(max, h);
+			simde_mm_store_si128(H1 + j, h);
+			h = simde_mm_subs_epu16(h, gapoe);
+			e = simde_mm_subs_epu16(e, gape);
+			e = simde_mm_max_epi16(e, h);
+			simde_mm_store_si128(E + j, e);
+			f = simde_mm_subs_epu16(f, gape);
+			f = simde_mm_max_epi16(f, h);
+			h = simde_mm_load_si128(H0 + j);
 		}
 		for (k = 0; LIKELY(k < 8); ++k) {
-			f = _mm_slli_si128(f, 2);
+			f = simde_mm_slli_si128(f, 2);
 			for (j = 0; LIKELY(j < slen); ++j) {
-				h = _mm_load_si128(H1 + j);
-				h = _mm_max_epi16(h, f);
-				_mm_store_si128(H1 + j, h);
-				h = _mm_subs_epu16(h, gapoe);
-				f = _mm_subs_epu16(f, gape);
-				if(UNLIKELY(!_mm_movemask_epi8(_mm_cmpgt_epi16(f, h)))) goto end_loop_i16;
+				h = simde_mm_load_si128(H1 + j);
+				h = simde_mm_max_epi16(h, f);
+				simde_mm_store_si128(H1 + j, h);
+				h = simde_mm_subs_epu16(h, gapoe);
+				f = simde_mm_subs_epu16(f, gape);
+				if(UNLIKELY(!_mm_movemask_epi8(simde_mm_cmpgt_epi16(f, h)))) goto end_loop_i16;
 			}
 		}
 end_loop_i16:
