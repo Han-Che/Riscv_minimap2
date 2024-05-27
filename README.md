@@ -4,8 +4,7 @@
 [![Build Status](https://github.com/lh3/minimap2/actions/workflows/ci.yaml/badge.svg)](https://github.com/lh3/minimap2/actions)
 ## <a name="started"></a>Getting Started
 ```sh
-git clone https://github.com/lh3/minimap2
-cd minimap2 && make
+cd minimap2 && make -f Makefile.simde
 # long sequences against a reference genome
 ./minimap2 -a test/MT-human.fa test/MT-orang.fa > test.sam
 # create an index first and then map
